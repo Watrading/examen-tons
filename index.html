@@ -252,7 +252,7 @@
     d["Score"] = `${correct} / ${reponses.length}`;
     d["Réponses"] = reponses.map(r=>Array.isArray(r)?r.join('-'):r).join('|');
     // ENVOI vers Google Sheets
-    fetch("https:"https://script.google.com/macros/s/AKfycbwTVDgHPCSEkwPGxblu5N8r-XWO0zn52swhJMM8ZQpkCFHIsOrxuUbezgIu8E-gczsp/exec", {
+    fetch("https://script.google.com/macros/s/AKfycbwTVDgHPCSEkwPGxblu5N8r-XWO0zn52swhJMM8ZQpkCFHIsOrxuUbezgIu8E-gczsp/exec", {
       method: "POST",
       mode: "no-cors",
       body: JSON.stringify(d),
