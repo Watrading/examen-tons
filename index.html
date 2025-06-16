@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Examen de perception des tons chinois</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 700px; margin: auto; background: #f8f8f8; }
+    .card { background: #fff; border-radius: 16px; padding: 2em; box-shadow: 0 2px 8px #ccc; margin: 2em 0; }
+    label { font-weight: bold; }
+    input[type="text"], select, input[type="number"] { font-size: 1em; padding: 0.5em; border-radius: 8px; border: 1px solid #ddd; }
+    button { padding: 0.5em 1.5em; border-radius: 8px; border: none; background: #1976d2; color: #fff; font-weight: bold; font-size: 1em; cursor: pointer; }
+    button:disabled { background: #aaa; }
+    .hide { display: none; }
+    .audio-btn { margin-right: 1em; }
+    .response { margin: 1em 0; }
+    .center { text-align: center; }
+    .success { color: green; }
+    .fail { color: red; }
+    .input-inline { display:inline-block; width:2.5em; margin-right:10px;}
+    .phono { font-size:1.1em; margin-right:10px;}
+  </style>
+</head>
+<body>
+  <div class="card" id="login-card">
+    <h2 class="center">Connexion étudiant</h2>
+    <label>Nom&nbsp;:</label> <input type="text" id="nom"><br><br>
+    <label>Prénom&nbsp;:</label> <input type="text" id="prenom"><br><br>
+    <label>Âge&nbsp;:</label> <input type="number" min="10" max="99" id="age"><br><br>
+    <label>Niveau HSK&nbsp;:</label>
+    <select id="hsk">
+      <option value="">Choisir</option>
+      <option>1</option><option>2</option><option>3</option><option>4</option>
+      <option>5</option><option>6</option><option>7</option><option>8</option><option>9</option>
+    </select><br><br>
+    <label>Niveau HSKK&nbsp;:</label>
+    <select id="hskk">
+      <option value="">Choisir</option>
+      <option>初级</option>
+      <option>中级</option>
+      <option>高级</option>
+    </select><br><br>
+    <label>Année d'étude&nbsp;:</label>
+    <select id="annee">
+      <option value="">Choisir</option>
+      <option>1ère année</option>
+      <option>2ème année</option>
+      <option>3ème année</option>
+    </select><br><br>
+    <button onclick="startExam()">Commencer</button>
+  </div>
+
+  <div class="card hide" id="exam-card">
+  <h2>Examen de perception</h2>
+  <div style="margin-bottom:1em; padding:1em; border-radius:8px; background:#fffbe7; border:1px solid #f9e29c;">
+    <b>Consigne :</b>
+    Pour chaque mot, écoutez l’audio (maximum 3 fois), puis indiquez le ton pour chaque syllabe entendue.
+    Pour les mots monosyllabiques, indiquez le ton entendu dans la case.
+    Pour les mots dissyllabiques, indiquez le ton de chaque syllabe séparément, dans l’ordre.
+  </div>
+  <div id="progress"></div>
+  <div id="question"></div>
+  <div id="audio-controls"></div>
+  <div class="response" id="zone-reponses"></div>
+  <div style="margin-top: 1em;">
+    <button onclick="nextQuestion()">Suivant</button>
+  </div>
+</div>
+
+
+  <div class="card hide" id="result-card">
+    <h2>Examen terminé</h2>
+    <div id="resultats"></div>
+    <button onclick="downloadCSV()">Télécharger mes réponses (.csv)</button>
+  </div>
+
+  <script>
+    let questions = [];
+    let bonnesReponses = [];
+    let reponses = [];
+    let etudiant = {};
+    let index = 0;
+    let playCount = 0;
+    let maxPlay = 3;
+
+    fetch('questions.json').then(r => r.json()).then(data => { questions = data; });
+    fetch('bonnes_reponses.json').then(r => r.json()).then(data => { bonnesReponses = data; });
+
+    document.querySelector('button[onclick="startExam()"]').disabled = true;
+
+    Promise.all([
+      fetch('questions.json').then(r => r.json()),
+      fetch('bonnes_reponses.json').then(r => r.json())
+    ]).then(([q,b]) => {
+      questions = q;
+      bonnesReponses = b;
+      document.querySelector('button[onclick="startExam()"]').disabled = false;
+    });
+
+
+    function startExam() {
+      etudiant.nom = document.getElementById('nom').value.trim();
+      etudiant.prenom = document.getElementById('prenom').value.trim();
+      etudiant.age = document.getElementById('age').value.trim();
+      etudiant.hsk = document.getElementById('hsk').value;
+      etudiant.hskk = document.getElementById('hskk').value;
+      etudiant.annee = document.getElementById('annee').value;
+      if (!etudiant.nom || !etudiant.prenom || !etudiant.age || !etudiant.hsk || !etudiant.hskk || !etudiant.annee) {
+        alert("Merci de remplir tous les champs.");
+        return;
+      }
+      document.getElementById('login-card').classList.add('hide');
+      document.getElementById('exam-card').classList.remove('hide');
+      reponses = [];
+      index = 0;
+      showQuestion();
+    }
+
+    function showQuestion() {
+      if (index >= questions.length) {
+        finishExam();
+        return;
+      }
+      document.getElementById('progress').innerHTML = `Question ${index + 1} / ${questions.length}`;
+      let q = questions[index];
+      let html = q.texte + "<br>";
+
+      // Extraction de la transcription entre parenthèses
+      let match = q.texte.match(/\((.*?)\)/);
+      let trans = match ? match[1].trim().split(' ') : [];
+      let zoneReponses = document.getElementById('zone-reponses');
+      let zone = "";
+
+      if (trans.length == 2) {
+        // Dissy
+        zone += `<span class="phono">${trans[0]}</span><input type="number" min="1" max="4" id="reponse1" class="input-inline" autocomplete="off">`;
+        zone += `<span class="phono">${trans[1]}</span><input type="number" min="1" max="4" id="reponse2" class="input-inline" autocomplete="off">`;
+      } else {
+        // Mono
+        zone += `<input type="number" min="1" max="4" id="reponse1" class="input-inline" autocomplete="off">`;
+      }
+
+      document.getElementById('question').innerHTML = html;
+      zoneReponses.innerHTML = zone;
+
+      playCount = 0;
+      document.getElementById('audio-controls').innerHTML =
+        `<audio id="audio" src="02_wav/${q.audio}" preload="auto"></audio>
+         <button id="play-audio" class="audio-btn">Écouter l'audio</button>
+         <span>Écoutes restantes : <span id="remaining">${maxPlay}</span></span>`;
+
+      document.getElementById('play-audio').onclick = function() {
+        if (playCount < maxPlay) {
+          document.getElementById('audio').currentTime = 0;
+          document.getElementById('audio').play();
+          playCount++;
+          document.getElementById('remaining').textContent = maxPlay - playCount;
+          if (playCount >= maxPlay) {
+            document.getElementById('play-audio').disabled = true;
+          }
+        }
+      }
+      document.getElementById('reponse1').focus();
+    }
+
+    function nextQuestion() {
+      let q = questions[index];
+      let match = q.texte.match(/\((.*?)\)/);
+      let trans = match ? match[1].trim().split(' ') : [];
+      if (trans.length == 2) {
+        let val1 = document.getElementById('reponse1').value;
+        let val2 = document.getElementById('reponse2').value;
+        if (!['1','2','3','4'].includes(val1) || !['1','2','3','4'].includes(val2)) {
+          alert("Merci de répondre avec un chiffre entre 1 et 4 pour chaque syllabe.");
+          return;
+        }
+        reponses.push([Number(val1), Number(val2)]);
+      } else {
+        let val1 = document.getElementById('reponse1').value;
+        if (!['1','2','3','4'].includes(val1)) {
+          alert("Merci de répondre par un chiffre entre 1 et 4.");
+          return;
+        }
+        reponses.push([Number(val1)]);
+      }
+      index++;
+      showQuestion();
+    }
+
+    function finishExam() {
+      sendToSheets();
+      document.getElementById('exam-card').classList.add('hide');
+      document.getElementById('result-card').classList.remove('hide');
+      let correct = 0;
+      let correctionHTML = "<table border=1 style='border-collapse:collapse;'><tr><th>Q#</th><th>Votre réponse</th><th>Bonne réponse</th></tr>";
+      for (let i=0; i < reponses.length; i++) {
+        let bonne = bonnesReponses[i];
+        let r = reponses[i];
+        let ok = false;
+        if (bonne.length == 2) {
+          ok = (r[0] === bonne[0] && r[1] === bonne[1]);
+          correctionHTML += `<tr><td>${i+1}</td><td${ok?" class='success'":" class='fail'"}>${r[0]}, ${r[1]}</td><td>${bonne[0]}, ${bonne[1]}</td></tr>`;
+        } else {
+          ok = (r[0] === bonne[0]);
+          correctionHTML += `<tr><td>${i+1}</td><td${ok?" class='success'":" class='fail'"}>${r[0]}</td><td>${bonne[0]}</td></tr>`;
+        }
+        if (ok) correct++;
+      }
+      correctionHTML += "</table>";
+      correctionHTML += `<p><b>Score: ${correct} / ${reponses.length}</b></p>`;
+      document.getElementById('resultats').innerHTML = correctionHTML;
+    }
+
+    function downloadCSV() {
+      let csv = "Nom,Prénom,Âge,HSK,HSKK,Année";
+      for (let i=0; i<questions.length; i++) csv += `,Q${i+1}`;
+      csv += "\n";
+      csv += `${etudiant.nom},${etudiant.prenom},${etudiant.age},${etudiant.hsk},${etudiant.hskk},${etudiant.annee}`;
+      for (let i=0; i<reponses.length; i++) {
+        csv += "," + reponses[i].join('-');
+      }
+      let blob = new Blob([csv], {type: "text/csv"});
+      let a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `reponses_${etudiant.nom}_${etudiant.prenom}.csv`;
+      a.click();
+    }
+
+    function sendToSheets() {
+    // Construit un objet “ligne” à envoyer
+    let d = {
+      "Nom": etudiant.nom,
+      "Prénom": etudiant.prenom,
+      "Âge": etudiant.age,
+      "HSK": etudiant.hsk,
+      "HSKK": etudiant.hskk,
+      "Année": etudiant.annee,
+      "Score": "",
+      "Réponses": "",
+      "Date": (new Date()).toLocaleString()
+    };
+    // Calcul du score
+    let correct = 0;
+    for (let i=0; i < reponses.length; i++) {
+      let bonne = bonnesReponses[i];
+      let r = reponses[i];
+      if (bonne.length == 2) {
+        if (r[0] === bonne[0] && r[1] === bonne[1]) correct++;
+      } else {
+        if (r[0] === bonne[0]) correct++;
+      }
+    }
+    d["Score"] = `${correct} / ${reponses.length}`;
+    d["Réponses"] = reponses.map(r=>Array.isArray(r)?r.join('-'):r).join('|');
+    // ENVOI vers Google Sheets
+    fetch("https:"https://script.google.com/macros/s/AKfycbwTVDgHPCSEkwPGxblu5N8r-XWO0zn52swhJMM8ZQpkCFHIsOrxuUbezgIu8E-gczsp/exec", {
+      method: "POST",
+      mode: "no-cors",
+      body: JSON.stringify(d),
+      headers: {"Content-Type": "application/json"}
+    });
+  }
+
+
+  </script>
+</body>
+</html>
