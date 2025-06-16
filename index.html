@@ -226,37 +226,38 @@
     }
 
     function sendToSheets() {
-      let d = {
-        "Nom": etudiant.nom,
-        "Prénom": etudiant.prenom,
-        "Âge": etudiant.age,
-        "HSK": etudiant.hsk,
-        "HSKK": etudiant.hskk,
-        "Année": etudiant.annee,
-        "Score": "",
-        "Réponses": "",
-        "Date": (new Date()).toLocaleString()
-      };
-      let correct = 0;
-      for (let i=0; i < reponses.length; i++) {
-        let bonne = bonnesReponses[i];
-        let r = reponses[i];
-        if (bonne.length == 2) {
-          if (r[0] === bonne[0] && r[1] === bonne[1]) correct++;
-        } else {
-          if (r[0] === bonne[0]) correct++;
-        }
+    // Construit un objet “ligne” à envoyer
+    let d = {
+      "Nom": etudiant.nom,
+      "Prénom": etudiant.prenom,
+      "Âge": etudiant.age,
+      "HSK": etudiant.hsk,
+      "HSKK": etudiant.hskk,
+      "Année": etudiant.annee,
+      "Score": "",
+      "Réponses": "",
+      "Date": (new Date()).toLocaleString()
+    };
+    // Calcul du score
+    let correct = 0;
+    for (let i=0; i < reponses.length; i++) {
+      let bonne = bonnesReponses[i];
+      let r = reponses[i];
+      if (bonne.length == 2) {
+        if (r[0] === bonne[0] && r[1] === bonne[1]) correct++;
+      } else {
+        if (r[0] === bonne[0]) correct++;
       }
-      d["Score"] = `${correct} / ${reponses.length}`;
-      d["Réponses"] = reponses.map(r=>Array.isArray(r)?r.join('-'):r).join('|');
-      fetch("https://script.google.com/macros/s/AKfycbwTVDgHPCSEkwPGxblu5N8r-XWO0zn52swhJMM8ZQpkCFHIsOrxuUbezgIu8E-gczsp/exec", {
-        method: "POST",
-        mode: "no-cors",
-        body: JSON.stringify(d),
-        headers: {"Content-Type": "application/json"}
-      });
     }
-
+    d["Score"] = `${correct} / ${reponses.length}`;
+    d["Réponses"] = reponses.map(r=>Array.isArray(r)?r.join('-'):r).join('|');
+    // ENVOI vers Google Sheets
+    fetch("https:"https://script.google.com/macros/s/AKfycbwTVDgHPCSEkwPGxblu5N8r-XWO0zn52swhJMM8ZQpkCFHIsOrxuUbezgIu8E-gczsp/exec", {
+      method: "POST",
+      mode: "no-cors",
+      body: JSON.stringify(d),
+      headers: {"Content-Type": "application/json"}
+    });
   }
 
 
