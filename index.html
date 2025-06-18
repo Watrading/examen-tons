@@ -26,6 +26,11 @@
     <label>Nom&nbsp;:</label> <input type="text" id="nom"><br><br>
     <label>Prénom&nbsp;:</label> <input type="text" id="prenom"><br><br>
     <label>Âge&nbsp;:</label> <input type="number" min="10" max="99" id="age"><br><br>
+    <label>Sexe&nbsp;:</label>
+    <select id="sex">
+      <option value="">Choisir</option>
+      <option>Homme</option><option>Femme</option>
+    </select><br><br>
     <label>Niveau HSK&nbsp;:</label>
     <select id="hsk">
       <option value="">Choisir</option>
@@ -53,13 +58,31 @@
   <h2>Examen de perception</h2>
   <div style="margin-bottom:1em; padding:1em; border-radius:8px; background:#fffbe7; border:1px solid #f9e29c;">
     <b>Consigne :</b>
-    Pour chaque mot, écoutez l’audio (maximum 3 fois), puis indiquez le ton pour chaque syllabe entendue.
-    Pour les mots monosyllabiques, indiquez le ton entendu dans la case.
-    Pour les mots dissyllabiques, indiquez le ton de chaque syllabe séparément, dans l’ordre.
+    <p>✅ 请听下面的录音，然后在词语上标出你听到的声调。标声调时可以用数字（1, 2, 3, 4）来表示。<br>
+    例如：北京 → <code>Bei3jing1</code> ✅</p>
+
+    <p>✅ 如果有变调，请直接写出变调后的声调。<br>
+    例如：不要 → <code>bu2 yao4</code> ✅</p>
+
+    <p>❌ 不要写原始声调（未变调的声调）：<code>bu4 yao4</code> ❌</p>
+
+    <hr>
+
+    <p>✅ Écoute l’enregistrement ci-dessous et note le ton (chiffre de 1 à 4) au-dessus de chaque syllabe selon ce que tu entends.<br>
+    Exemple : 北京 → <code>Bei3jing1</code> ✅</p>
+
+    <p>✅ S’il y a un ton modifié (ton changé à cause d’une règle de phonétique), écris directement le ton que tu entends.<br>
+    Exemple : 不要 → <code>bu2 yao4</code> ✅</p>
+
+    <p>❌ N’écris pas les tons d’origine sans tenir compte des changements : <code>bu4 yao4</code> ❌</p>
   </div>
+    <hr>
   <div id="progress"></div>
+    <p></p>
   <div id="question"></div>
+    <p></p>
   <div id="audio-controls"></div>
+    <p></p>
   <div class="response" id="zone-reponses"></div>
   <div style="margin-top: 1em;">
     <button onclick="nextQuestion()">Suivant</button>
@@ -101,6 +124,7 @@
       etudiant.nom = document.getElementById('nom').value.trim();
       etudiant.prenom = document.getElementById('prenom').value.trim();
       etudiant.age = document.getElementById('age').value.trim();
+      etudiant.sexe = document.getElementById('sex').value;
       etudiant.hsk = document.getElementById('hsk').value;
       etudiant.hskk = document.getElementById('hskk').value;
       etudiant.annee = document.getElementById('annee').value;
@@ -231,6 +255,7 @@
       "Nom": etudiant.nom,
       "Prénom": etudiant.prenom,
       "Âge": etudiant.age,
+      "Sexe": etudiant.sexe,
       "HSK": etudiant.hsk,
       "HSKK": etudiant.hskk,
       "Année": etudiant.annee,
