@@ -1,4 +1,4 @@
-const SITE_OPEN = false; // Mets à false quand tu veux couper l’accès
+const SITE_OPEN = true; // Mets à false quand tu veux couper l’accès
 
 window.onload = function() {
   if (!SITE_OPEN) {
