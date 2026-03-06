@@ -1,0 +1,418 @@
+[
+  {
+    "id": 1,
+    "reference_audio": "01_chinese_audio/0001.wav",
+    "options": [
+      {
+        "choice": 1,
+        "audio": "02_fongbe_audio/0009.wav"
+      },
+      {
+        "choice": 2,
+        "audio": "02_fongbe_audio/00010.wav"
+      },
+      {
+        "choice": 3,
+        "audio": "02_fongbe_audio/00011.wav"
+      }
+    ],
+    "rating_scale": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ]
+  },
+  {
+    "id": 2,
+    "reference_audio": "01_chinese_audio/0002.wav",
+    "options": [
+      {
+        "choice": 1,
+        "audio": "02_fongbe_audio/0001.wav"
+      },
+      {
+        "choice": 2,
+        "audio": "02_fongbe_audio/0002.wav"
+      }
+    ],
+    "rating_scale": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ]
+  },
+  {
+    "id": 3,
+    "reference_audio": "01_chinese_audio/0003.wav",
+    "options": [
+      {
+        "choice": 1,
+        "audio": "02_fongbe_audio/0006.wav"
+      },
+      {
+        "choice": 2,
+        "audio": "02_fongbe_audio/0007.wav"
+      },
+      {
+        "choice": 3,
+        "audio": "02_fongbe_audio/0008.wav"
+      }
+    ],
+    "rating_scale": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ]
+  },
+  {
+    "id": 4,
+    "reference_audio": "01_chinese_audio/0004.wav",
+    "options": [
+      {
+        "choice": 1,
+        "audio": "02_fongbe_audio/0003.wav"
+      },
+      {
+        "choice": 2,
+        "audio": "02_fongbe_audio/0004.wav"
+      },
+      {
+        "choice": 3,
+        "audio": "02_fongbe_audio/0005.wav"
+      }
+    ],
+    "rating_scale": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ]
+  },
+  {
+    "id": 5,
+    "reference_audio": "01_chinese_audio/0005.wav",
+    "options": [
+      {
+        "choice": 1,
+        "audio": "02_fongbe_audio/0001.wav"
+      },
+      {
+        "choice": 2,
+        "audio": "02_fongbe_audio/0002.wav"
+      }
+    ],
+    "rating_scale": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ]
+  },
+  {
+    "id": 6,
+    "reference_audio": "01_chinese_audio/0006.wav",
+    "options": [
+      {
+        "choice": 1,
+        "audio": "02_fongbe_audio/0003.wav"
+      },
+      {
+        "choice": 2,
+        "audio": "02_fongbe_audio/0004.wav"
+      },
+      {
+        "choice": 3,
+        "audio": "02_fongbe_audio/0005.wav"
+      }
+    ],
+    "rating_scale": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ]
+  },
+  {
+    "id": 7,
+    "reference_audio": "01_chinese_audio/0007.wav",
+    "options": [
+      {
+        "choice": 1,
+        "audio": "02_fongbe_audio/0001.wav"
+      },
+      {
+        "choice": 2,
+        "audio": "02_fongbe_audio/0002.wav"
+      }
+    ],
+    "rating_scale": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ]
+  },
+  {
+    "id": 8,
+    "reference_audio": "01_chinese_audio/0008.wav",
+    "options": [
+      {
+        "choice": 1,
+        "audio": "02_fongbe_audio/0003.wav"
+      },
+      {
+        "choice": 2,
+        "audio": "02_fongbe_audio/0004.wav"
+      },
+      {
+        "choice": 3,
+        "audio": "02_fongbe_audio/0005.wav"
+      }
+    ],
+    "rating_scale": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ]
+  },
+  {
+    "id": 9,
+    "reference_audio": "01_chinese_audio/0009.wav",
+    "options": [
+      {
+        "choice": 1,
+        "audio": "02_fongbe_audio/0001.wav"
+      },
+      {
+        "choice": 2,
+        "audio": "02_fongbe_audio/0002.wav"
+      }
+    ],
+    "rating_scale": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ]
+  },
+  {
+    "id": 10,
+    "reference_audio": "01_chinese_audio/0010.wav",
+    "options": [
+      {
+        "choice": 1,
+        "audio": "02_fongbe_audio/0003.wav"
+      },
+      {
+        "choice": 2,
+        "audio": "02_fongbe_audio/0004.wav"
+      },
+      {
+        "choice": 3,
+        "audio": "02_fongbe_audio/0005.wav"
+      }
+    ],
+    "rating_scale": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ]
+  },
+  {
+    "id": 11,
+    "reference_audio": "01_chinese_audio/0011.wav",
+    "options": [
+      {
+        "choice": 1,
+        "audio": "02_fongbe_audio/0006.wav"
+      },
+      {
+        "choice": 2,
+        "audio": "02_fongbe_audio/0007.wav"
+      },
+      {
+        "choice": 3,
+        "audio": "02_fongbe_audio/0008.wav"
+      }
+    ],
+    "rating_scale": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ]
+  },
+  {
+    "id": 12,
+    "reference_audio": "01_chinese_audio/0012.wav",
+    "options": [
+      {
+        "choice": 1,
+        "audio": "02_fongbe_audio/0006.wav"
+      },
+      {
+        "choice": 2,
+        "audio": "02_fongbe_audio/0007.wav"
+      },
+      {
+        "choice": 3,
+        "audio": "02_fongbe_audio/0008.wav"
+      }
+    ],
+    "rating_scale": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ]
+  },
+  {
+    "id": 13,
+    "reference_audio": "01_chinese_audio/0013.wav",
+    "options": [
+      {
+        "choice": 1,
+        "audio": "02_fongbe_audio/0006.wav"
+      },
+      {
+        "choice": 2,
+        "audio": "02_fongbe_audio/0007.wav"
+      },
+      {
+        "choice": 3,
+        "audio": "02_fongbe_audio/0008.wav"
+      }
+    ],
+    "rating_scale": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ]
+  },
+  {
+    "id": 14,
+    "reference_audio": "01_chinese_audio/0014.wav",
+    "options": [
+      {
+        "choice": 1,
+        "audio": "02_fongbe_audio/0009.wav"
+      },
+      {
+        "choice": 2,
+        "audio": "02_fongbe_audio/00010.wav"
+      },
+      {
+        "choice": 3,
+        "audio": "02_fongbe_audio/00011.wav"
+      }
+    ],
+    "rating_scale": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ]
+  },
+  {
+    "id": 15,
+    "reference_audio": "01_chinese_audio/0015.wav",
+    "options": [
+      {
+        "choice": 1,
+        "audio": "02_fongbe_audio/0009.wav"
+      },
+      {
+        "choice": 2,
+        "audio": "02_fongbe_audio/00010.wav"
+      },
+      {
+        "choice": 3,
+        "audio": "02_fongbe_audio/00011.wav"
+      }
+    ],
+    "rating_scale": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ]
+  },
+  {
+    "id": 16,
+    "reference_audio": "01_chinese_audio/0016.wav",
+    "options": [
+      {
+        "choice": 1,
+        "audio": "02_fongbe_audio/0009.wav"
+      },
+      {
+        "choice": 2,
+        "audio": "02_fongbe_audio/00010.wav"
+      },
+      {
+        "choice": 3,
+        "audio": "02_fongbe_audio/00011.wav"
+      }
+    ],
+    "rating_scale": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ]
+  }
+]

@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <script src="site_flag.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Plateforme d'expériences tonales</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 1100px;
+      margin: auto;
+      background: #f8f8f8;
+      padding: 1rem;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 2em;
+      box-shadow: 0 2px 8px #ccc;
+      margin: 2em 0;
+    }
+
+    .center { text-align: center; }
+    .hide { display: none; }
+
+    label { font-weight: bold; }
+
+    input[type="text"], select, input[type="number"] {
+      font-size: 1em;
+      padding: 0.5em;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      width: 100%;
+      max-width: 320px;
+      box-sizing: border-box;
+    }
+
+    button {
+      padding: 0.7em 1.2em;
+      border-radius: 8px;
+      border: none;
+      background: #1976d2;
+      color: #fff;
+      font-weight: bold;
+      font-size: 1em;
+      cursor: pointer;
+      margin: 0.25rem;
+    }
+
+    button:disabled {
+      background: #aaa;
+      cursor: not-allowed;
+    }
+
+    .instructions {
+      margin-bottom: 1.5em;
+      padding: 1em;
+      border-radius: 8px;
+      background: #fffbe7;
+      border: 1px solid #f9e29c;
+      line-height: 1.7;
+    }
+
+    .muted {
+      color: #666;
+      font-size: 0.95em;
+    }
+
+    .success { color: green; font-weight: bold; }
+    .fail { color: red; font-weight: bold; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1em;
+      background: #fff;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 0.6em;
+      text-align: center;
+    }
+
+    #loading-message {
+      color: #555;
+      margin-top: 1em;
+    }
+
+    .input-inline {
+      display:inline-block;
+      width:2.5em;
+      margin-right:10px;
+    }
+
+    .phono {
+      font-size:1.1em;
+      margin-right:10px;
+    }
+
+    .audio-btn {
+      margin-right: 1em;
+      margin-bottom: 0.8em;
+    }
+
+    .choice-box {
+      display: flex;
+      gap: 1.5em;
+      flex-wrap: wrap;
+      margin-top: 1em;
+    }
+
+    .choice-item {
+      background: #f4f6fb;
+      padding: 1em 1.2em;
+      border-radius: 12px;
+      border: 1px solid #dbe3f0;
+      min-width: 180px;
+    }
+
+    .choice-item input {
+      margin-right: 0.5em;
+      transform: scale(1.2);
+    }
+
+    .grid-main {
+      display: grid;
+      grid-template-columns: 1fr 2.4fr 1fr;
+      gap: 1rem;
+      margin-top: 1.5rem;
+      align-items: start;
+    }
+
+    .panel {
+      background: #e9f2fb;
+      border: 2px solid #c9d8ea;
+      border-radius: 14px;
+      padding: 1rem;
+      min-height: 330px;
+    }
+
+    .panel h3 {
+      text-align: center;
+      margin-top: 0;
+      color: #234;
+    }
+
+    .audio-box {
+      background: #f7d2e6;
+      border: 2px solid #b77498;
+      border-radius: 18px;
+      padding: 1rem;
+      text-align: center;
+      margin: 1rem 0;
+    }
+
+    .audio-box p, .option-card p {
+      margin: 0.5rem 0 1rem 0;
+      font-weight: bold;
+      color: #2c3e70;
+      font-size: 1.05rem;
+    }
+
+    .choice-buttons, .rating-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.7rem;
+      justify-content: center;
+      margin-top: 1rem;
+    }
+
+    .choice-btn, .rating-btn {
+      min-width: 52px;
+    }
+
+    .selected {
+      background: #28a745 !important;
+    }
+
+    .option-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .option-card {
+      background: #f7d2e6;
+      border: 2px solid #b77498;
+      border-radius: 18px;
+      padding: 1rem;
+      text-align: center;
+    }
+
+    .bottom-actions {
+      margin-top: 1.5rem;
+      text-align: center;
+    }
+
+    .exp-choice-wrap {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .exp-card {
+      background: #f4f6fb;
+      border: 1px solid #dbe3f0;
+      border-radius: 14px;
+      padding: 1.2rem;
+      text-align: center;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card" id="login-card">
+    <h2 class="center">Connexion étudiant</h2>
+
+    <label>Nom :</label><br>
+    <input type="text" id="nom"><br><br>
+
+    <label>Prénom :</label><br>
+    <input type="text" id="prenom"><br><br>
+
+    <label>Âge :</label><br>
+    <input type="number" min="10" max="99" id="age"><br><br>
+
+    <label>Sexe :</label><br>
+    <select id="sex">
+      <option value="">Choisir</option>
+      <option>Homme</option>
+      <option>Femme</option>
+    </select><br><br>
+
+    <label>Niveau HSK :</label><br>
+    <select id="hsk">
+      <option value="">Choisir</option>
+      <option>1</option><option>2</option><option>3</option><option>4</option>
+      <option>5</option><option>6</option><option>7</option><option>8</option><option>9</option>
+    </select><br><br>
+
+    <label>Niveau HSKK :</label><br>
+    <select id="hskk">
+      <option value="">Choisir</option>
+      <option>初级</option>
+      <option>中级</option>
+      <option>高级</option>
+    </select><br><br>
+
+    <label>Année d'étude :</label><br>
+    <select id="annee">
+      <option value="">Choisir</option>
+      <option>1ère année</option>
+      <option>2ème année</option>
+      <option>3ème année</option>
+    </select><br><br>
+
+    <button id="login-btn" onclick="registerStudent()" disabled>Continuer</button>
+    <div id="loading-message">Chargement des fichiers...</div>
+  </div>
+
+  <div class="card hide" id="menu-card">
+    <h2 class="center">Choisissez une expérience</h2>
+    <p class="center muted">Étudiant enregistré : <span id="student-summary"></span></p>
+
+    <div class="exp-choice-wrap">
+      <div class="exp-card">
+        <h3>Expériences 1 & 2</h3>
+        <p>Perception des tons chinois</p>
+        <button onclick="startExperience('exp1_2')">Commencer</button>
+      </div>
+
+      <div class="exp-card">
+        <h3>Expérience 3</h3>
+        <p>Catégorisation</p>
+        <button onclick="startExperience('exp3')">Commencer</button>
+      </div>
+
+      <div class="exp-card">
+        <h3>Expérience 4</h3>
+        <p>Discrimination</p>
+        <button onclick="startExperience('exp4')">Commencer</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card hide" id="exam-card">
+    <div class="top-bar">
+      <h2 id="exam-title">Expérience</h2>
+      <button type="button" onclick="backToMenu()">Retour au menu</button>
+    </div>
+
+    <div id="instructions-box" class="instructions"></div>
+    <div id="progress" class="center"></div>
+    <div id="exam-content"></div>
+
+    <div class="bottom-actions">
+      <button id="next-btn" onclick="nextQuestion()">Suivant</button>
+    </div>
+  </div>
+
+  <div class="card hide" id="result-card">
+    <h2 class="center">Expérience terminée</h2>
+    <div id="resultats"></div>
+    <br>
+    <button onclick="downloadCSV()">Télécharger mes réponses (.csv)</button>
+    <button onclick="returnToChoiceAfterFinish()">Choisir une autre expérience</button>
+  </div>
+
+  <script>
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwTVDgHPCSEkwPGxblu5N8r-XWO0zn52swhJMM8ZQpkCFHIsOrxuUbezgIu8E-gczsp/exec";
+    const maxPlay = 3;
+
+    let etudiant = {};
+
+    let bank = {
+      exp1_2: { questions: [], bonnes: [] },
+      exp3: { questions: [] },
+      exp4: { questions: [], bonnes: [] }
+    };
+
+    let currentExperience = null;
+    let currentQuestions = [];
+    let currentBonnes = [];
+    let reponses = [];
+    let index = 0;
+
+    // exp1_2 / exp4
+    let playCount = 0;
+
+    // exp3
+    let selectedChoice = null;
+    let selectedRating = null;
+    let playCounts = {};
+
+    const EXP_CONFIG = {
+      exp1_2: {
+        title: "Expériences 1 & 2 : Perception des tons chinois",
+        typeExperience: "exp1_2_perception_chinese"
+      },
+      exp3: {
+        title: "Expérience 3 : Catégorisation",
+        typeExperience: "exp3_categorisation"
+      },
+      exp4: {
+        title: "Expérience 4 : Discrimination",
+        typeExperience: "exp4_discrimination"
+      }
+    };
+
+    Promise.all([
+      fetch("questions_exp1_2.json").then(r => {
+        if (!r.ok) throw new Error("Impossible de charger questions_exp1_2.json");
+        return r.json();
+      }),
+      fetch("bonnes_reponses_exp1_2.json").then(r => {
+        if (!r.ok) throw new Error("Impossible de charger bonnes_reponses_exp1_2.json");
+        return r.json();
+      }),
+      fetch("questions_exp3.json").then(r => {
+        if (!r.ok) throw new Error("Impossible de charger questions_exp3.json");
+        return r.json();
+      }),
+      fetch("questions_exp4.json").then(r => {
+        if (!r.ok) throw new Error("Impossible de charger questions_exp4.json");
+        return r.json();
+      }),
+      fetch("bonnes_reponses_exp4.json").then(r => {
+        if (!r.ok) throw new Error("Impossible de charger bonnes_reponses_exp4.json");
+        return r.json();
+      })
+    ]).then(([q12, b12, q3, q4, b4]) => {
+      bank.exp1_2.questions = q12;
+      bank.exp1_2.bonnes = b12;
+      bank.exp3.questions = q3;
+      bank.exp4.questions = q4;
+      bank.exp4.bonnes = b4;
+
+      document.getElementById("login-btn").disabled = false;
+      document.getElementById("loading-message").textContent = "Chargement terminé.";
+    }).catch(err => {
+      console.error(err);
+      document.getElementById("loading-message").innerHTML =
+        `<span class="fail">Erreur : ${err.message}</span>`;
+    });
+
+    function registerStudent() {
+      etudiant.nom = document.getElementById("nom").value.trim();
+      etudiant.prenom = document.getElementById("prenom").value.trim();
+      etudiant.age = document.getElementById("age").value.trim();
+      etudiant.sexe = document.getElementById("sex").value;
+      etudiant.hsk = document.getElementById("hsk").value;
+      etudiant.hskk = document.getElementById("hskk").value;
+      etudiant.annee = document.getElementById("annee").value;
+
+      if (!etudiant.nom || !etudiant.prenom || !etudiant.age || !etudiant.sexe || !etudiant.hsk || !etudiant.hskk || !etudiant.annee) {
+        alert("Merci de remplir tous les champs.");
+        return;
+      }
+
+      document.getElementById("student-summary").textContent = `${etudiant.prenom} ${etudiant.nom}`;
+      document.getElementById("login-card").classList.add("hide");
+      document.getElementById("menu-card").classList.remove("hide");
+    }
+
+    function startExperience(expKey) {
+      currentExperience = expKey;
+      currentQuestions = JSON.parse(JSON.stringify(bank[expKey].questions));
+      currentBonnes = bank[expKey].bonnes ? JSON.parse(JSON.stringify(bank[expKey].bonnes)) : [];
+      reponses = [];
+      index = 0;
+
+      document.getElementById("menu-card").classList.add("hide");
+      document.getElementById("result-card").classList.add("hide");
+      document.getElementById("exam-card").classList.remove("hide");
+      document.getElementById("exam-title").textContent = EXP_CONFIG[expKey].title;
+
+      renderInstructions();
+      showQuestion();
+    }
+
+    function backToMenu() {
+      document.getElementById("exam-card").classList.add("hide");
+      document.getElementById("result-card").classList.add("hide");
+      document.getElementById("menu-card").classList.remove("hide");
+      document.getElementById("exam-content").innerHTML = "";
+      document.getElementById("progress").innerHTML = "";
+    }
+
+    function returnToChoiceAfterFinish() {
+      document.getElementById("result-card").classList.add("hide");
+      document.getElementById("menu-card").classList.remove("hide");
+    }
+
+    function renderInstructions() {
+      const box = document.getElementById("instructions-box");
+
+      if (currentExperience === "exp1_2") {
+        box.innerHTML = `
+          <b>Consigne :</b>
+          <p>✅ 请听下面的录音，然后在词语上标出您听到的声调。标声调时可以用数字（1, 2, 3, 4）来表示。<br>
+          例如：北京 → <code>Bei3jing1</code> ✅</p>
+
+          <p>✅ 如果有变调，请直接写出变调后的声调。<br>
+          例如：不要 → <code>bu2 yao4</code> ✅</p>
+
+          <p>❌ 不要写原始声调（未变调的声调）：<code>bu4 yao4</code> ❌</p>
+
+          <hr>
+
+          <p>✅ Écoutez l’enregistrement ci-dessous et notez le ton (chiffre de 1 à 4) au-dessus de chaque syllabe selon ce que vous entendez.<br>
+          Exemple : 北京 → <code>Bei3jing1</code> ✅</p>
+
+          <p>✅ S’il y a un ton modifié, écrivez directement le ton que vous entendez.<br>
+          Exemple : 不要 → <code>bu2 yao4</code> ✅</p>
+
+          <p>❌ N’écrivez pas les tons d’origine sans tenir compte des changements : <code>bu4 yao4</code> ❌</p>
+          <p class="muted">Nombre maximal d’écoutes par question : 3</p>
+        `;
+      } else if (currentExperience === "exp3") {
+        box.innerHTML = `
+          <b>Consigne :</b>
+          <p>
+            Vous allez d’abord écouter <b>un audio de référence en chinois</b>.
+            Ensuite, vous allez écouter <b>2 ou 3 audios en fongbè</b>.
+            Votre tâche est de choisir <b>l’audio en fongbè qui ressemble le plus possible</b>
+            à l’audio de référence du point de vue du <b>ton</b>.
+          </p>
+          <p>
+            Après avoir choisi l’audio le plus proche, vous devez aussi donner
+            une <b>note de ressemblance de 1 à 7</b> :
+            <br>1 = ne ressemble pas du tout
+            <br>7 = ressemble très fortement
+          </p>
+          <p>
+            您先听中文参考音频，然后听 2 个或 3 个 fon 音频。
+            请选出一个 <b>在声调上最接近</b> 中文参考音频的 fon 音频。
+            之后，再给这个相似程度打分：
+            <br>1 = 完全不像
+            <br>7 = 非常相似
+          </p>
+          <p class="muted">Nombre maximal d’écoutes par audio : 3</p>
+        `;
+      } else if (currentExperience === "exp4") {
+        box.innerHTML = `
+          <b>Consigne :</b>
+          <p>
+            Vous allez écouter un enregistrement contenant <b>deux sons</b>.
+            Écoutez-les attentivement puis choisissez si les deux sons sont
+            <b>identiques</b> ou <b>différents</b>.
+          </p>
+          <p>
+            每一道题里有两个声音。请认真听，然后判断这两个声音是
+            <b>相同</b> 还是 <b>不同</b>。
+          </p>
+          <p class="muted">Nombre maximal d’écoutes par question : 3</p>
+        `;
+      }
+    }
+
+    function showQuestion() {
+      if (index >= currentQuestions.length) {
+        finishExam();
+        return;
+      }
+
+      document.getElementById("progress").innerHTML = `<b>Question ${index + 1} / ${currentQuestions.length}</b>`;
+
+      if (currentExperience === "exp1_2") {
+        renderExp1_2();
+      } else if (currentExperience === "exp3") {
+        renderExp3();
+      } else if (currentExperience === "exp4") {
+        renderExp4();
+      }
+    }
+
+    function renderExp1_2() {
+      const q = currentQuestions[index];
+      let html = `
+        <div id="question">${q.texte}<br></div>
+        <p></p>
+        <div id="audio-controls"></div>
+        <p></p>
+        <div class="response" id="zone-reponses"></div>
+      `;
+
+      document.getElementById("exam-content").innerHTML = html;
+
+      let match = q.texte.match(/\((.*?)\)/);
+      let trans = match ? match[1].trim().split(' ') : [];
+      let zone = "";
+
+      if (trans.length === 2) {
+        zone += `<span class="phono">${trans[0]}</span><input type="number" min="1" max="4" id="reponse1" class="input-inline" autocomplete="off">`;
+        zone += `<span class="phono">${trans[1]}</span><input type="number" min="1" max="4" id="reponse2" class="input-inline" autocomplete="off">`;
+      } else {
+        zone += `<input type="number" min="1" max="4" id="reponse1" class="input-inline" autocomplete="off">`;
+      }
+
+      document.getElementById("zone-reponses").innerHTML = zone;
+
+      playCount = 0;
+      document.getElementById("audio-controls").innerHTML =
+        `<audio id="audio" src="02_wav/${q.audio}" preload="auto"></audio>
+         <button id="play-audio" class="audio-btn">Écouter l'audio</button>
+         <span>Écoutes restantes : <span id="remaining">${maxPlay}</span></span>`;
+
+      document.getElementById("play-audio").onclick = function() {
+        if (playCount < maxPlay) {
+          document.getElementById("audio").currentTime = 0;
+          document.getElementById("audio").play();
+          playCount++;
+          document.getElementById("remaining").textContent = maxPlay - playCount;
+          if (playCount >= maxPlay) {
+            document.getElementById("play-audio").disabled = true;
+          }
+        }
+      };
+
+      if (document.getElementById("reponse1")) {
+        document.getElementById("reponse1").focus();
+      }
+    }
+
+    function renderExp3() {
+      const q = currentQuestions[index];
+      selectedChoice = null;
+      selectedRating = null;
+      playCounts = {};
+
+      let html = `
+        <div class="grid-main">
+          <div class="panel">
+            <h3>Audio de référence</h3>
+            <div id="reference-zone"></div>
+          </div>
+
+          <div class="panel">
+            <h3>Quel audio est le plus proche de la référence ?</h3>
+            <div id="options-zone"></div>
+          </div>
+
+          <div class="panel">
+            <h3>Note de ressemblance</h3>
+            <div id="rating-zone"></div>
+          </div>
+        </div>
+      `;
+      document.getElementById("exam-content").innerHTML = html;
+
+      renderExp3Reference(q);
+      renderExp3Options(q);
+      renderExp3Ratings();
+    }
+
+    function renderExp3Reference(q) {
+      const audioPath = `02_wav/categorization/${q.reference_audio}`;
+      document.getElementById("reference-zone").innerHTML = `
+        <div class="audio-box">
+          <p>Audio de référence</p>
+          <audio id="ref-audio" src="${audioPath}" preload="auto"></audio>
+          <button class="audio-play" id="play-ref-btn">Écouter</button>
+          <div class="muted">Écoutes restantes : <span id="ref-remaining">${maxPlay}</span></div>
+        </div>
+      `;
+
+      playCounts["ref"] = 0;
+      document.getElementById("play-ref-btn").onclick = function() {
+        playManagedAudio("ref-audio", "ref", "play-ref-btn", "ref-remaining");
+      };
+    }
+
+    function renderExp3Options(q) {
+      let html = `<div class="option-grid">`;
+
+      q.options.forEach((opt, idx) => {
+        const audioId = `opt-audio-${idx}`;
+        const btnId = `play-opt-btn-${idx}`;
+        const remId = `opt-remaining-${idx}`;
+        const selectBtnId = `choice-btn-${idx}`;
+        const audioPath = `02_wav/categorization/${opt.audio}`;
+
+        html += `
+          <div class="option-card">
+            <p>Audio ${opt.choice}</p>
+            <audio id="${audioId}" src="${audioPath}" preload="auto"></audio>
+            <button class="audio-play" id="${btnId}">Écouter</button>
+            <div class="muted">Écoutes restantes : <span id="${remId}">${maxPlay}</span></div>
+            <div class="choice-buttons">
+              <button type="button" class="choice-btn" id="${selectBtnId}" onclick="selectChoice(${opt.choice})">${opt.choice}</button>
+            </div>
+          </div>
+        `;
+      });
+
+      html += `</div>`;
+      document.getElementById("options-zone").innerHTML = html;
+
+      q.options.forEach((opt, idx) => {
+        playCounts[`opt${idx}`] = 0;
+        document.getElementById(`play-opt-btn-${idx}`).onclick = function() {
+          playManagedAudio(`opt-audio-${idx}`, `opt${idx}`, `play-opt-btn-${idx}`, `opt-remaining-${idx}`);
+        };
+      });
+    }
+
+    function renderExp3Ratings() {
+      let html = `<div class="rating-buttons">`;
+      for (let i = 1; i <= 7; i++) {
+        html += `<button type="button" class="rating-btn" id="rating-btn-${i}" onclick="selectRating(${i})">${i}</button>`;
+      }
+      html += `</div>`;
+      document.getElementById("rating-zone").innerHTML = html;
+    }
+
+    function renderExp4() {
+      const q = currentQuestions[index];
+      playCount = 0;
+
+      let html = `
+        <p id="question-label"><b>Écoutez l'audio puis choisissez votre réponse :</b></p>
+        <div id="audio-controls"></div>
+
+        <div class="response" id="zone-reponses">
+          <p><b>Les deux sons sont-ils identiques ou différents ?</b></p>
+          <div class="choice-box">
+            <label class="choice-item">
+              <input type="radio" name="reponse" value="1">
+              Identique / 相同
+            </label>
+
+            <label class="choice-item">
+              <input type="radio" name="reponse" value="0">
+              Différent / 不同
+            </label>
+          </div>
+        </div>
+      `;
+
+      document.getElementById("exam-content").innerHTML = html;
+      document.getElementById("audio-controls").innerHTML = `
+        <audio id="audio" src="02_wav/${q.audio}" preload="auto"></audio>
+        <button id="play-audio" class="audio-btn">Écouter l'audio</button>
+        <span>Écoutes restantes : <span id="remaining">${maxPlay}</span></span>
+      `;
+
+      document.getElementById("play-audio").onclick = function() {
+        const audio = document.getElementById("audio");
+        if (playCount < maxPlay) {
+          audio.currentTime = 0;
+          audio.play();
+          playCount++;
+          document.getElementById("remaining").textContent = maxPlay - playCount;
+          if (playCount >= maxPlay) {
+            document.getElementById("play-audio").disabled = true;
+          }
+        }
+      };
+    }
+
+    function playManagedAudio(audioId, key, buttonId, remainingId) {
+      const audio = document.getElementById(audioId);
+      if (playCounts[key] < maxPlay) {
+        audio.currentTime = 0;
+        audio.play();
+        playCounts[key]++;
+        document.getElementById(remainingId).textContent = maxPlay - playCounts[key];
+        if (playCounts[key] >= maxPlay) {
+          document.getElementById(buttonId).disabled = true;
+        }
+      }
+    }
+
+    function selectChoice(choiceNumber) {
+      selectedChoice = choiceNumber;
+      document.querySelectorAll(".choice-btn").forEach(btn => btn.classList.remove("selected"));
+      document.querySelectorAll(".choice-btn").forEach(btn => {
+        if (Number(btn.textContent.trim()) === choiceNumber) {
+          btn.classList.add("selected");
+        }
+      });
+    }
+
+    function selectRating(ratingNumber) {
+      selectedRating = ratingNumber;
+      document.querySelectorAll(".rating-btn").forEach(btn => btn.classList.remove("selected"));
+      document.getElementById(`rating-btn-${ratingNumber}`).classList.add("selected");
+    }
+
+    function nextQuestion() {
+      if (currentExperience === "exp1_2") {
+        saveExp1_2Answer();
+      } else if (currentExperience === "exp3") {
+        saveExp3Answer();
+      } else if (currentExperience === "exp4") {
+        saveExp4Answer();
+      }
+    }
+
+    function saveExp1_2Answer() {
+      let q = currentQuestions[index];
+      let match = q.texte.match(/\((.*?)\)/);
+      let trans = match ? match[1].trim().split(' ') : [];
+
+      if (trans.length === 2) {
+        let val1 = document.getElementById("reponse1").value;
+        let val2 = document.getElementById("reponse2").value;
+        if (!['1','2','3','4'].includes(val1) || !['1','2','3','4'].includes(val2)) {
+          alert("Merci de répondre avec un chiffre entre 1 et 4 pour chaque syllabe.");
+          return;
+        }
+        reponses.push([Number(val1), Number(val2)]);
+      } else {
+        let val1 = document.getElementById("reponse1").value;
+        if (!['1','2','3','4'].includes(val1)) {
+          alert("Merci de répondre par un chiffre entre 1 et 4.");
+          return;
+        }
+        reponses.push([Number(val1)]);
+      }
+
+      index++;
+      showQuestion();
+    }
+
+    function saveExp3Answer() {
+      if (selectedChoice === null) {
+        alert("Merci de choisir l’audio qui ressemble le plus à la référence.");
+        return;
+      }
+
+      if (selectedRating === null) {
+        alert("Merci de choisir une note de ressemblance de 1 à 7.");
+        return;
+      }
+
+      reponses.push({
+        choice: selectedChoice,
+        rating: selectedRating
+      });
+
+      index++;
+      showQuestion();
+    }
+
+    function saveExp4Answer() {
+      const selected = document.querySelector('input[name="reponse"]:checked');
+      if (!selected) {
+        alert("Merci de choisir une réponse : Identique ou Différent.");
+        return;
+      }
+
+      reponses.push(Number(selected.value));
+      index++;
+      showQuestion();
+    }
+
+    function finishExam() {
+      if (currentExperience === "exp1_2") {
+        sendExp1_2ToSheets();
+        showExp1_2Results();
+      } else if (currentExperience === "exp3") {
+        sendExp3ToSheets();
+        showExp3Results();
+      } else if (currentExperience === "exp4") {
+        sendExp4ToSheets();
+        showExp4Results();
+      }
+
+      document.getElementById("exam-card").classList.add("hide");
+      document.getElementById("result-card").classList.remove("hide");
+    }
+
+    function showExp1_2Results() {
+      let correct = 0;
+      let html = "<table><tr><th>Q#</th><th>Votre réponse</th><th>Bonne réponse</th></tr>";
+
+      for (let i = 0; i < reponses.length; i++) {
+        let bonne = currentBonnes[i];
+        let r = reponses[i];
+        let ok = false;
+
+        if (bonne.length === 2) {
+          ok = (r[0] === bonne[0] && r[1] === bonne[1]);
+          html += `<tr><td>${i+1}</td><td class="${ok ? 'success' : 'fail'}">${r[0]}, ${r[1]}</td><td>${bonne[0]}, ${bonne[1]}</td></tr>`;
+        } else {
+          ok = (r[0] === bonne[0]);
+          html += `<tr><td>${i+1}</td><td class="${ok ? 'success' : 'fail'}">${r[0]}</td><td>${bonne[0]}</td></tr>`;
+        }
+        if (ok) correct++;
+      }
+
+      html += "</table>";
+      html += `<p><b>Score : ${correct} / ${reponses.length}</b></p>`;
+      document.getElementById("resultats").innerHTML = html;
+    }
+
+    function showExp3Results() {
+      let html = `
+        <table>
+          <tr>
+            <th>Question</th>
+            <th>Choix audio</th>
+            <th>Note</th>
+          </tr>
+      `;
+
+      for (let i = 0; i < reponses.length; i++) {
+        html += `
+          <tr>
+            <td>${i + 1}</td>
+            <td>${reponses[i].choice}</td>
+            <td>${reponses[i].rating}</td>
+          </tr>
+        `;
+      }
+
+      html += `</table>`;
+      document.getElementById("resultats").innerHTML = html;
+    }
+
+    function showExp4Results() {
+      const LABELS = { 1: "Identique", 0: "Différent" };
+      let correct = 0;
+      let html = `
+        <table>
+          <tr>
+            <th>Q#</th>
+            <th>Votre réponse</th>
+            <th>Bonne réponse</th>
+            <th>Résultat</th>
+          </tr>
+      `;
+
+      for (let i = 0; i < reponses.length; i++) {
+        const bonne = Array.isArray(currentBonnes[i]) ? Number(currentBonnes[i][0]) : Number(currentBonnes[i]);
+        const r = Number(reponses[i]);
+        const ok = (r === bonne);
+        if (ok) correct++;
+
+        html += `
+          <tr>
+            <td>${i + 1}</td>
+            <td class="${ok ? 'success' : 'fail'}">${LABELS[r]}</td>
+            <td>${LABELS[bonne]}</td>
+            <td>${ok ? "✔" : "✘"}</td>
+          </tr>
+        `;
+      }
+
+      html += `</table>`;
+      html += `<p><b>Score : ${correct} / ${reponses.length}</b></p>`;
+      document.getElementById("resultats").innerHTML = html;
+    }
+
+    function downloadCSV() {
+      if (currentExperience === "exp1_2") {
+        downloadCSVExp1_2();
+      } else if (currentExperience === "exp3") {
+        downloadCSVExp3();
+      } else if (currentExperience === "exp4") {
+        downloadCSVExp4();
+      }
+    }
+
+    function downloadCSVExp1_2() {
+      let csv = "Nom,Prénom,Âge,Sexe,HSK,HSKK,Année";
+      for (let i = 0; i < currentQuestions.length; i++) csv += `,Q${i+1}`;
+      csv += "\n";
+
+      csv += `${safeCSV(etudiant.nom)},${safeCSV(etudiant.prenom)},${safeCSV(etudiant.age)},${safeCSV(etudiant.sexe)},${safeCSV(etudiant.hsk)},${safeCSV(etudiant.hskk)},${safeCSV(etudiant.annee)}`;
+      for (let i = 0; i < reponses.length; i++) {
+        csv += "," + safeCSV(reponses[i].join("-"));
+      }
+
+      downloadBlob(csv, `exp1_2_${etudiant.nom}_${etudiant.prenom}.csv`);
+    }
+
+    function downloadCSVExp3() {
+      let csv = [
+        "Nom,Prénom,Âge,Sexe,HSK,HSKK,Année,Date"
+      ];
+
+      csv.push([
+        escapeCSV(etudiant.nom),
+        escapeCSV(etudiant.prenom),
+        escapeCSV(etudiant.age),
+        escapeCSV(etudiant.sexe),
+        escapeCSV(etudiant.hsk),
+        escapeCSV(etudiant.hskk),
+        escapeCSV(etudiant.annee),
+        escapeCSV(new Date().toLocaleString())
+      ].join(","));
+
+      csv.push("");
+      csv.push("Question,Audio_Reference,Choix_Audio,Note");
+
+      for (let i = 0; i < currentQuestions.length; i++) {
+        csv.push([
+          i + 1,
+          escapeCSV(currentQuestions[i].reference_audio),
+          escapeCSV(reponses[i].choice),
+          escapeCSV(reponses[i].rating)
+        ].join(","));
+      }
+
+      downloadBlob(csv.join("\n"), `exp3_${etudiant.nom}_${etudiant.prenom}.csv`);
+    }
+
+    function downloadCSVExp4() {
+      const LABELS = { 1: "Identique", 0: "Différent" };
+      let correct = 0;
+
+      for (let i = 0; i < reponses.length; i++) {
+        const bonne = Array.isArray(currentBonnes[i]) ? Number(currentBonnes[i][0]) : Number(currentBonnes[i]);
+        if (Number(reponses[i]) === bonne) correct++;
+      }
+
+      let csv = [
+        "Nom,Prénom,Âge,Sexe,HSK,HSKK,Année,Score,Date"
+      ];
+
+      csv.push([
+        escapeCSV(etudiant.nom),
+        escapeCSV(etudiant.prenom),
+        escapeCSV(etudiant.age),
+        escapeCSV(etudiant.sexe),
+        escapeCSV(etudiant.hsk),
+        escapeCSV(etudiant.hskk),
+        escapeCSV(etudiant.annee),
+        escapeCSV(`${correct} / ${reponses.length}`),
+        escapeCSV(new Date().toLocaleString())
+      ].join(","));
+
+      csv.push("");
+      csv.push("Question,Audio,Réponse étudiante,Bonne réponse,Correct");
+
+      for (let i = 0; i < currentQuestions.length; i++) {
+        const bonne = Array.isArray(currentBonnes[i]) ? Number(currentBonnes[i][0]) : Number(currentBonnes[i]);
+        const rep = Number(reponses[i]);
+        const ok = rep === bonne ? "Oui" : "Non";
+
+        csv.push([
+          i + 1,
+          escapeCSV(currentQuestions[i].audio),
+          escapeCSV(LABELS[rep]),
+          escapeCSV(LABELS[bonne]),
+          ok
+        ].join(","));
+      }
+
+      downloadBlob(csv.join("\n"), `exp4_${etudiant.nom}_${etudiant.prenom}.csv`);
+    }
+
+    function sendExp1_2ToSheets() {
+      let correct = 0;
+      for (let i = 0; i < reponses.length; i++) {
+        let bonne = currentBonnes[i];
+        let r = reponses[i];
+        if (bonne.length === 2) {
+          if (r[0] === bonne[0] && r[1] === bonne[1]) correct++;
+        } else {
+          if (r[0] === bonne[0]) correct++;
+        }
+      }
+
+      let d = {
+        "Type_Experience": "exp1_2_perception_chinese",
+        "Nom": etudiant.nom,
+        "Prénom": etudiant.prenom,
+        "Âge": etudiant.age,
+        "Sexe": etudiant.sexe,
+        "HSK": etudiant.hsk,
+        "HSKK": etudiant.hskk,
+        "Année": etudiant.annee,
+        "Score": `${correct} / ${reponses.length}`,
+        "Réponses": reponses.map(r => Array.isArray(r) ? r.join('-') : r).join('|'),
+        "Date": (new Date()).toLocaleString()
+      };
+
+      postToSheets(d);
+    }
+
+    function sendExp3ToSheets() {
+      const payload = {
+        "Type_Experience": "exp3_categorisation",
+        "Nom": etudiant.nom,
+        "Prénom": etudiant.prenom,
+        "Âge": etudiant.age,
+        "Sexe": etudiant.sexe,
+        "HSK": etudiant.hsk,
+        "HSKK": etudiant.hskk,
+        "Année": etudiant.annee,
+        "Date": new Date().toLocaleString()
+      };
+
+      for (let i = 0; i < currentQuestions.length; i++) {
+        payload[`Q${i + 1}_Choix`] = reponses[i].choice;
+        payload[`Q${i + 1}_Note`] = reponses[i].rating;
+      }
+
+      postToSheets(payload);
+    }
+
+    function sendExp4ToSheets() {
+      const LABELS = { 1: "Identique", 0: "Différent" };
+      let correct = 0;
+
+      for (let i = 0; i < reponses.length; i++) {
+        const bonne = Array.isArray(currentBonnes[i]) ? Number(currentBonnes[i][0]) : Number(currentBonnes[i]);
+        if (Number(reponses[i]) === bonne) correct++;
+      }
+
+      const payload = {
+        "Type_Experience": "exp4_discrimination",
+        "Nom": etudiant.nom,
+        "Prénom": etudiant.prenom,
+        "Âge": etudiant.age,
+        "Sexe": etudiant.sexe,
+        "HSK": etudiant.hsk,
+        "HSKK": etudiant.hskk,
+        "Année": etudiant.annee,
+        "Score": `${correct} / ${reponses.length}`,
+        "Date": new Date().toLocaleString()
+      };
+
+      for (let i = 0; i < currentQuestions.length; i++) {
+        payload[`Q${i + 1}`] = LABELS[Number(reponses[i])];
+      }
+
+      for (let i = 0; i < currentQuestions.length; i++) {
+        payload[`Audio_Q${i + 1}`] = currentQuestions[i].audio;
+      }
+
+      for (let i = 0; i < currentBonnes.length; i++) {
+        const bonne = Array.isArray(currentBonnes[i]) ? Number(currentBonnes[i][0]) : Number(currentBonnes[i]);
+        payload[`Bonne_Q${i + 1}`] = LABELS[bonne];
+      }
+
+      payload["Reponses_Codees"] = reponses.join("|");
+
+      postToSheets(payload);
+    }
+
+    function postToSheets(payload) {
+      fetch(GOOGLE_SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors",
+        body: JSON.stringify(payload),
+        headers: { "Content-Type": "application/json" }
+      }).catch(err => {
+        console.error("Erreur envoi Sheets :", err);
+      });
+    }
+
+    function downloadBlob(content, filename) {
+      const blob = new Blob(["\uFEFF" + content], { type: "text/csv;charset=utf-8;" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      a.click();
+    }
+
+    function safeCSV(value) {
+      return `"${String(value ?? "").replace(/"/g, '""')}"`;
+    }
+
+    function escapeCSV(value) {
+      if (value === null || value === undefined) return "";
+      const str = String(value).replace(/"/g, '""');
+      return `"${str}"`;
+    }
+  </script>
+</body>
+</html>
