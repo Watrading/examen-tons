@@ -161,7 +161,7 @@
   },
   {
     "audio": "2syl/0001.wav",
-    "texte": "中午 (zhog wu)"
+    "texte": "中午 (zhong wu)"
   },
   {
     "audio": "2syl/0002.wav",
@@ -249,7 +249,7 @@
   },
   {
     "audio": "2syl/0023.wav",
-    "texte": "旅游 (lǚ you)"
+    "texte": "旅游 (lü you)"
   },
   {
     "audio": "2syl/0024.wav",
@@ -415,4 +415,5 @@
     "audio": "2syl/0064.wav",
     "texte": "打算 (da suan)"
   }
+
 ]
