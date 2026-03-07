@@ -320,7 +320,7 @@
     <div id="loading-message">Chargement des fichiers...</div>
     <div id="debug-tools" class="debug-tools hide">
       <b>Mode test technique</b>
-      <p class="muted">Visible uniquement avec <code>?debug=1</code>. Ce test envoie des lignes marquées <code>Test_Mode = OUI</code> dans les vraies feuilles pour vérifier que l’enregistrement fonctionne.</p>
+      
       <button type="button" onclick="runAutomaticSheetsTest()">Lancer le test automatique Google Sheets</button>
       <div id="debug-status" class="muted"></div>
     </div>
@@ -1018,7 +1018,6 @@
           return trans.length === 2 ? [1, 1] : [1];
         });
         let p1 = buildExp1_2Payload();
-        p1["Test_Mode"] = "OUI";
         p1["Test_Label"] = "AUTO_EXP1_2";
         tests.push(["Exp1_2", await postToSheets(p1)]);
 
@@ -1026,7 +1025,6 @@
         currentQuestions = JSON.parse(JSON.stringify(bank.exp3.questions));
         reponses = currentQuestions.map(() => ({ choice: 1, rating: 4 }));
         let p3 = buildExp3Payload();
-        p3["Test_Mode"] = "OUI";
         p3["Test_Label"] = "AUTO_EXP3";
         tests.push(["Exp3", await postToSheets(p3)]);
 
@@ -1034,7 +1032,6 @@
         currentQuestions = JSON.parse(JSON.stringify(bank.exp4.questions));
         reponses = currentQuestions.map((_, i) => i % 2);
         let p4 = buildExp4Payload();
-        p4["Test_Mode"] = "OUI";
         p4["Test_Label"] = "AUTO_EXP4";
         tests.push(["Exp4", await postToSheets(p4)]);
 
@@ -1107,4 +1104,5 @@
 </body>
 
 </html>
+
 
