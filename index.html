@@ -222,6 +222,32 @@
       align-items: center;
       margin-bottom: 1rem;
     }
+
+    .status-box {
+      margin-top: 1rem;
+      padding: 0.9rem 1rem;
+      border-radius: 10px;
+      background: #eef6ff;
+      border: 1px solid #cfe1f6;
+      line-height: 1.6;
+    }
+
+    .warning-box {
+      margin-top: 1rem;
+      padding: 0.9rem 1rem;
+      border-radius: 10px;
+      background: #fff6e6;
+      border: 1px solid #f2cf87;
+      line-height: 1.6;
+    }
+
+    .debug-tools {
+      margin-top: 1rem;
+      padding: 1rem;
+      border-radius: 12px;
+      background: #f3f6fb;
+      border: 1px dashed #b8c8de;
+    }
   </style>
 </head>
 <body>
@@ -238,6 +264,18 @@
     <label>Âge :</label><br>
     <input type="number" min="10" max="99" id="age"><br><br>
 
+    <label>Niveau d'étude :</label><br>
+    <select id="niveau-etude">
+      <option value="">Choisir</option>
+      <option>Primaire</option>
+      <option>Collège</option>
+      <option>Lycée</option>
+      <option>Licence</option>
+      <option>Master</option>
+      <option>Doctorat</option>
+      <option>Autre</option>
+    </select><br><br>
+
     <label>Sexe :</label><br>
     <select id="sex">
       <option value="">Choisir</option>
@@ -245,31 +283,47 @@
       <option>Femme</option>
     </select><br><br>
 
-    <label>Niveau HSK :</label><br>
-    <select id="hsk">
+    <label>Apprenant du chinois ?</label><br>
+    <select id="apprenant-chinois" onchange="toggleChineseFields()">
       <option value="">Choisir</option>
-      <option>1</option><option>2</option><option>3</option><option>4</option>
-      <option>5</option><option>6</option><option>7</option><option>8</option><option>9</option>
+      <option>Oui</option>
+      <option>Non</option>
     </select><br><br>
 
-    <label>Niveau HSKK :</label><br>
-    <select id="hskk">
-      <option value="">Choisir</option>
-      <option>初级</option>
-      <option>中级</option>
-      <option>高级</option>
-    </select><br><br>
+    <div id="chinese-fields">
+      <label>Niveau HSK :</label><br>
+      <select id="hsk">
+        <option value="">Choisir</option>
+        <option>1</option><option>2</option><option>3</option><option>4</option>
+        <option>5</option><option>6</option><option>7</option><option>8</option><option>9</option>
+      </select><br><br>
 
-    <label>Année d'étude :</label><br>
-    <select id="annee">
-      <option value="">Choisir</option>
-      <option>1ère année</option>
-      <option>2ème année</option>
-      <option>3ème année</option>
-    </select><br><br>
+      <label>Niveau HSKK :</label><br>
+      <select id="hskk">
+        <option value="">Choisir</option>
+        <option>初级</option>
+        <option>中级</option>
+        <option>高级</option>
+      </select><br><br>
+
+      <label>Année d'étude en chinois :</label><br>
+      <select id="annee">
+        <option value="">Choisir</option>
+        <option>1ère année</option>
+        <option>2ème année</option>
+        <option>3ème année</option>
+        <option>4ème année ou plus</option>
+      </select><br><br>
+    </div>
 
     <button id="login-btn" onclick="registerStudent()" disabled>Continuer</button>
     <div id="loading-message">Chargement des fichiers...</div>
+    <div id="debug-tools" class="debug-tools hide">
+      <b>Mode test technique</b>
+      <p class="muted">Visible uniquement avec <code>?debug=1</code>. Ce test envoie des lignes marquées <code>Test_Mode = OUI</code> dans les vraies feuilles pour vérifier que l’enregistrement fonctionne.</p>
+      <button type="button" onclick="runAutomaticSheetsTest()">Lancer le test automatique Google Sheets</button>
+      <div id="debug-status" class="muted"></div>
+    </div>
   </div>
 
   <div class="card hide" id="menu-card">
@@ -316,27 +370,27 @@
     <h2 class="center">Expérience terminée</h2>
     <div id="resultats"></div>
     <br>
-    <button onclick="downloadCSV()">Télécharger mes réponses (.csv)</button>
     <button onclick="returnToChoiceAfterFinish()">Choisir une autre expérience</button>
   </div>
 
   <script>
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwTVDgHPCSEkwPGxblu5N8r-XWO0zn52swhJMM8ZQpkCFHIsOrxuUbezgIu8E-gczsp/exec";
     const maxPlay = 3;
+    const DEBUG_MODE = new URLSearchParams(window.location.search).get("debug") === "1";
 
     let etudiant = {};
 
     let bank = {
-      exp1_2: { questions: [], bonnes: [] },
+      exp1_2: { questions: [] },
       exp3: { questions: [] },
-      exp4: { questions: [], bonnes: [] }
+      exp4: { questions: [] }
     };
 
     let currentExperience = null;
     let currentQuestions = [];
-    let currentBonnes = [];
     let reponses = [];
     let index = 0;
+    let lastPayloadSent = null;
 
     // exp1_2 / exp4
     let playCount = 0;
@@ -366,10 +420,6 @@
         if (!r.ok) throw new Error("Impossible de charger questions_exp1_2.json");
         return r.json();
       }),
-      fetch("bonnes_reponses_exp1_2.json").then(r => {
-        if (!r.ok) throw new Error("Impossible de charger bonnes_reponses_exp1_2.json");
-        return r.json();
-      }),
       fetch("questions_exp3.json").then(r => {
         if (!r.ok) throw new Error("Impossible de charger questions_exp3.json");
         return r.json();
@@ -377,37 +427,57 @@
       fetch("questions_exp4.json").then(r => {
         if (!r.ok) throw new Error("Impossible de charger questions_exp4.json");
         return r.json();
-      }),
-      fetch("bonnes_reponses_exp4.json").then(r => {
-        if (!r.ok) throw new Error("Impossible de charger bonnes_reponses_exp4.json");
-        return r.json();
       })
-    ]).then(([q12, b12, q3, q4, b4]) => {
+    ]).then(([q12, q3, q4]) => {
       bank.exp1_2.questions = q12;
-      bank.exp1_2.bonnes = b12;
       bank.exp3.questions = q3;
       bank.exp4.questions = q4;
-      bank.exp4.bonnes = b4;
 
       document.getElementById("login-btn").disabled = false;
       document.getElementById("loading-message").textContent = "Chargement terminé.";
+      initPageTools();
     }).catch(err => {
       console.error(err);
       document.getElementById("loading-message").innerHTML =
         `<span class="fail">Erreur : ${err.message}</span>`;
+      initPageTools();
     });
 
+    function initPageTools() {
+      toggleChineseFields();
+      if (DEBUG_MODE) {
+        document.getElementById("debug-tools").classList.remove("hide");
+      }
+    }
+
+    function toggleChineseFields() {
+      const apprenant = document.getElementById("apprenant-chinois").value;
+      const chineseFields = document.getElementById("chinese-fields");
+      const isLearner = apprenant === "Oui";
+      chineseFields.style.display = (apprenant === "") ? "block" : (isLearner ? "block" : "none");
+    }
+
     function registerStudent() {
+      const apprenantChinois = document.getElementById("apprenant-chinois").value;
+      const isLearner = apprenantChinois === "Oui";
+
       etudiant.nom = document.getElementById("nom").value.trim();
       etudiant.prenom = document.getElementById("prenom").value.trim();
       etudiant.age = document.getElementById("age").value.trim();
+      etudiant.niveauEtude = document.getElementById("niveau-etude").value;
       etudiant.sexe = document.getElementById("sex").value;
-      etudiant.hsk = document.getElementById("hsk").value;
-      etudiant.hskk = document.getElementById("hskk").value;
-      etudiant.annee = document.getElementById("annee").value;
+      etudiant.apprenantChinois = apprenantChinois;
+      etudiant.hsk = isLearner ? document.getElementById("hsk").value : "Non applicable";
+      etudiant.hskk = isLearner ? document.getElementById("hskk").value : "Non applicable";
+      etudiant.annee = isLearner ? document.getElementById("annee").value : "Non applicable";
 
-      if (!etudiant.nom || !etudiant.prenom || !etudiant.age || !etudiant.sexe || !etudiant.hsk || !etudiant.hskk || !etudiant.annee) {
-        alert("Merci de remplir tous les champs.");
+      if (!etudiant.nom || !etudiant.prenom || !etudiant.age || !etudiant.niveauEtude || !etudiant.sexe || !etudiant.apprenantChinois) {
+        alert("Merci de remplir tous les champs obligatoires.");
+        return;
+      }
+
+      if (isLearner && (!etudiant.hsk || !etudiant.hskk || !etudiant.annee)) {
+        alert("Merci de remplir les informations sur l’apprentissage du chinois.");
         return;
       }
 
@@ -419,7 +489,6 @@
     function startExperience(expKey) {
       currentExperience = expKey;
       currentQuestions = JSON.parse(JSON.stringify(bank[expKey].questions));
-      currentBonnes = bank[expKey].bonnes ? JSON.parse(JSON.stringify(bank[expKey].bonnes)) : [];
       reponses = [];
       index = 0;
 
@@ -809,310 +878,220 @@
       showQuestion();
     }
 
-    function finishExam() {
-      if (currentExperience === "exp1_2") {
-        sendExp1_2ToSheets();
-        showExp1_2Results();
-      } else if (currentExperience === "exp3") {
-        sendExp3ToSheets();
-        showExp3Results();
-      } else if (currentExperience === "exp4") {
-        sendExp4ToSheets();
-        showExp4Results();
-      }
+    async function finishExam() {
+      document.getElementById("next-btn").disabled = true;
+      document.getElementById("progress").innerHTML = `<b>Enregistrement des réponses en cours...</b>`;
+
+      const payload = buildPayloadForCurrentExperience();
+      lastPayloadSent = payload;
+      const saveResult = await postToSheets(payload);
 
       document.getElementById("exam-card").classList.add("hide");
       document.getElementById("result-card").classList.remove("hide");
+      renderFinalMessage(saveResult);
+      document.getElementById("next-btn").disabled = false;
     }
 
-    function showExp1_2Results() {
-      let correct = 0;
-      let html = "<table><tr><th>Q#</th><th>Votre réponse</th><th>Bonne réponse</th></tr>";
-
-      for (let i = 0; i < reponses.length; i++) {
-        let bonne = currentBonnes[i];
-        let r = reponses[i];
-        let ok = false;
-
-        if (bonne.length === 2) {
-          ok = (r[0] === bonne[0] && r[1] === bonne[1]);
-          html += `<tr><td>${i+1}</td><td class="${ok ? 'success' : 'fail'}">${r[0]}, ${r[1]}</td><td>${bonne[0]}, ${bonne[1]}</td></tr>`;
-        } else {
-          ok = (r[0] === bonne[0]);
-          html += `<tr><td>${i+1}</td><td class="${ok ? 'success' : 'fail'}">${r[0]}</td><td>${bonne[0]}</td></tr>`;
-        }
-        if (ok) correct++;
-      }
-
-      html += "</table>";
-      html += `<p><b>Score : ${correct} / ${reponses.length}</b></p>`;
-      document.getElementById("resultats").innerHTML = html;
+    function buildPayloadForCurrentExperience() {
+      if (currentExperience === "exp1_2") return buildExp1_2Payload();
+      if (currentExperience === "exp3") return buildExp3Payload();
+      if (currentExperience === "exp4") return buildExp4Payload();
+      throw new Error("Expérience inconnue.");
     }
 
-    function showExp3Results() {
-      let html = `
-        <table>
-          <tr>
-            <th>Question</th>
-            <th>Choix audio</th>
-            <th>Note</th>
-          </tr>
-      `;
-
-      for (let i = 0; i < reponses.length; i++) {
-        html += `
-          <tr>
-            <td>${i + 1}</td>
-            <td>${reponses[i].choice}</td>
-            <td>${reponses[i].rating}</td>
-          </tr>
-        `;
-      }
-
-      html += `</table>`;
-      document.getElementById("resultats").innerHTML = html;
-    }
-
-    function showExp4Results() {
-      const LABELS = { 1: "Identique", 0: "Différent" };
-      let correct = 0;
-      let html = `
-        <table>
-          <tr>
-            <th>Q#</th>
-            <th>Votre réponse</th>
-            <th>Bonne réponse</th>
-            <th>Résultat</th>
-          </tr>
-      `;
-
-      for (let i = 0; i < reponses.length; i++) {
-        const bonne = Array.isArray(currentBonnes[i]) ? Number(currentBonnes[i][0]) : Number(currentBonnes[i]);
-        const r = Number(reponses[i]);
-        const ok = (r === bonne);
-        if (ok) correct++;
-
-        html += `
-          <tr>
-            <td>${i + 1}</td>
-            <td class="${ok ? 'success' : 'fail'}">${LABELS[r]}</td>
-            <td>${LABELS[bonne]}</td>
-            <td>${ok ? "✔" : "✘"}</td>
-          </tr>
-        `;
-      }
-
-      html += `</table>`;
-      html += `<p><b>Score : ${correct} / ${reponses.length}</b></p>`;
-      document.getElementById("resultats").innerHTML = html;
-    }
-
-    function downloadCSV() {
-      if (currentExperience === "exp1_2") {
-        downloadCSVExp1_2();
-      } else if (currentExperience === "exp3") {
-        downloadCSVExp3();
-      } else if (currentExperience === "exp4") {
-        downloadCSVExp4();
-      }
-    }
-
-    function downloadCSVExp1_2() {
-      let csv = "Nom,Prénom,Âge,Sexe,HSK,HSKK,Année";
-      for (let i = 0; i < currentQuestions.length; i++) csv += `,Q${i+1}`;
-      csv += "\n";
-
-      csv += `${safeCSV(etudiant.nom)},${safeCSV(etudiant.prenom)},${safeCSV(etudiant.age)},${safeCSV(etudiant.sexe)},${safeCSV(etudiant.hsk)},${safeCSV(etudiant.hskk)},${safeCSV(etudiant.annee)}`;
-      for (let i = 0; i < reponses.length; i++) {
-        csv += "," + safeCSV(reponses[i].join("-"));
-      }
-
-      downloadBlob(csv, `exp1_2_${etudiant.nom}_${etudiant.prenom}.csv`);
-    }
-
-    function downloadCSVExp3() {
-      let csv = [
-        "Nom,Prénom,Âge,Sexe,HSK,HSKK,Année,Date"
-      ];
-
-      csv.push([
-        escapeCSV(etudiant.nom),
-        escapeCSV(etudiant.prenom),
-        escapeCSV(etudiant.age),
-        escapeCSV(etudiant.sexe),
-        escapeCSV(etudiant.hsk),
-        escapeCSV(etudiant.hskk),
-        escapeCSV(etudiant.annee),
-        escapeCSV(new Date().toLocaleString())
-      ].join(","));
-
-      csv.push("");
-      csv.push("Question,Audio_Reference,Choix_Audio,Note");
-
-      for (let i = 0; i < currentQuestions.length; i++) {
-        csv.push([
-          i + 1,
-          escapeCSV(currentQuestions[i].reference_audio),
-          escapeCSV(reponses[i].choice),
-          escapeCSV(reponses[i].rating)
-        ].join(","));
-      }
-
-      downloadBlob(csv.join("\n"), `exp3_${etudiant.nom}_${etudiant.prenom}.csv`);
-    }
-
-    function downloadCSVExp4() {
-      const LABELS = { 1: "Identique", 0: "Différent" };
-      let correct = 0;
-
-      for (let i = 0; i < reponses.length; i++) {
-        const bonne = Array.isArray(currentBonnes[i]) ? Number(currentBonnes[i][0]) : Number(currentBonnes[i]);
-        if (Number(reponses[i]) === bonne) correct++;
-      }
-
-      let csv = [
-        "Nom,Prénom,Âge,Sexe,HSK,HSKK,Année,Score,Date"
-      ];
-
-      csv.push([
-        escapeCSV(etudiant.nom),
-        escapeCSV(etudiant.prenom),
-        escapeCSV(etudiant.age),
-        escapeCSV(etudiant.sexe),
-        escapeCSV(etudiant.hsk),
-        escapeCSV(etudiant.hskk),
-        escapeCSV(etudiant.annee),
-        escapeCSV(`${correct} / ${reponses.length}`),
-        escapeCSV(new Date().toLocaleString())
-      ].join(","));
-
-      csv.push("");
-      csv.push("Question,Audio,Réponse étudiante,Bonne réponse,Correct");
-
-      for (let i = 0; i < currentQuestions.length; i++) {
-        const bonne = Array.isArray(currentBonnes[i]) ? Number(currentBonnes[i][0]) : Number(currentBonnes[i]);
-        const rep = Number(reponses[i]);
-        const ok = rep === bonne ? "Oui" : "Non";
-
-        csv.push([
-          i + 1,
-          escapeCSV(currentQuestions[i].audio),
-          escapeCSV(LABELS[rep]),
-          escapeCSV(LABELS[bonne]),
-          ok
-        ].join(","));
-      }
-
-      downloadBlob(csv.join("\n"), `exp4_${etudiant.nom}_${etudiant.prenom}.csv`);
-    }
-
-    function sendExp1_2ToSheets() {
-      let correct = 0;
-      for (let i = 0; i < reponses.length; i++) {
-        let bonne = currentBonnes[i];
-        let r = reponses[i];
-        if (bonne.length === 2) {
-          if (r[0] === bonne[0] && r[1] === bonne[1]) correct++;
-        } else {
-          if (r[0] === bonne[0]) correct++;
-        }
-      }
-
-      let d = {
-        "Type_Experience": "exp1_2_perception_chinese",
+    function buildBasePayload(typeExperience) {
+      return {
+        "Type_Experience": typeExperience,
+        "Response_ID": `RESP_${Date.now()}_${Math.random().toString(36).slice(2, 8).toUpperCase()}`,
         "Nom": etudiant.nom,
         "Prénom": etudiant.prenom,
         "Âge": etudiant.age,
+        "Niveau_Etude": etudiant.niveauEtude,
         "Sexe": etudiant.sexe,
+        "Apprenant_Chinois": etudiant.apprenantChinois,
         "HSK": etudiant.hsk,
         "HSKK": etudiant.hskk,
-        "Année": etudiant.annee,
-        "Score": `${correct} / ${reponses.length}`,
-        "Réponses": reponses.map(r => Array.isArray(r) ? r.join('-') : r).join('|'),
-        "Date": (new Date()).toLocaleString()
+        "Année_Etude_Chinois": etudiant.annee,
+        "Date_ISO": new Date().toISOString(),
+        "Date_Locale": new Date().toLocaleString()
       };
-
-      postToSheets(d);
     }
 
-    function sendExp3ToSheets() {
-      const payload = {
-        "Type_Experience": "exp3_categorisation",
-        "Nom": etudiant.nom,
-        "Prénom": etudiant.prenom,
-        "Âge": etudiant.age,
-        "Sexe": etudiant.sexe,
-        "HSK": etudiant.hsk,
-        "HSKK": etudiant.hskk,
-        "Année": etudiant.annee,
-        "Date": new Date().toLocaleString()
-      };
+    function buildExp1_2Payload() {
+      const payload = buildBasePayload("exp1_2_perception_chinese");
+      payload["Nombre_Questions"] = reponses.length;
+      payload["Réponses"] = reponses.map(r => Array.isArray(r) ? r.join('-') : r).join('|');
+      return payload;
+    }
+
+    function buildExp3Payload() {
+      const payload = buildBasePayload("exp3_categorisation");
+      payload["Nombre_Questions"] = currentQuestions.length;
 
       for (let i = 0; i < currentQuestions.length; i++) {
         payload[`Q${i + 1}_Choix`] = reponses[i].choice;
         payload[`Q${i + 1}_Note`] = reponses[i].rating;
       }
 
-      postToSheets(payload);
+      return payload;
     }
 
-    function sendExp4ToSheets() {
+    function buildExp4Payload() {
       const LABELS = { 1: "Identique", 0: "Différent" };
-      let correct = 0;
-
-      for (let i = 0; i < reponses.length; i++) {
-        const bonne = Array.isArray(currentBonnes[i]) ? Number(currentBonnes[i][0]) : Number(currentBonnes[i]);
-        if (Number(reponses[i]) === bonne) correct++;
-      }
-
-      const payload = {
-        "Type_Experience": "exp4_discrimination",
-        "Nom": etudiant.nom,
-        "Prénom": etudiant.prenom,
-        "Âge": etudiant.age,
-        "Sexe": etudiant.sexe,
-        "HSK": etudiant.hsk,
-        "HSKK": etudiant.hskk,
-        "Année": etudiant.annee,
-        "Score": `${correct} / ${reponses.length}`,
-        "Date": new Date().toLocaleString()
-      };
+      const payload = buildBasePayload("exp4_discrimination");
+      payload["Nombre_Questions"] = currentQuestions.length;
+      payload["Reponses_Codees"] = reponses.join("|");
 
       for (let i = 0; i < currentQuestions.length; i++) {
         payload[`Q${i + 1}`] = LABELS[Number(reponses[i])];
       }
 
-      for (let i = 0; i < currentQuestions.length; i++) {
-        payload[`Audio_Q${i + 1}`] = currentQuestions[i].audio;
+      return payload;
+    }
+
+    function renderFinalMessage(saveResult) {
+      let html = `
+        <div class="status-box">
+          <p><b>Merci.</b> L’expérience est terminée.</p>
+          <p>Les scores et les bonnes réponses ne sont pas affichés à l’écran.</p>
+        </div>
+      `;
+
+      if (saveResult && saveResult.ok) {
+        html += `
+          <div class="status-box">
+            <p class="success">Les réponses ont bien été enregistrées dans Google Sheets.</p>
+            <p class="muted">Référence d’envoi : ${saveResult.responseId || "—"}</p>
+          </div>
+        `;
+      } else {
+        html += `
+          <div class="warning-box">
+            <p class="fail">L’expérience est terminée, mais la confirmation automatique d’enregistrement a échoué.</p>
+            <p class="muted">${(saveResult && saveResult.message) ? saveResult.message : "Veuillez vérifier le déploiement Apps Script ou refaire un test technique."}</p>
+            <button type="button" onclick="retryLastSubmission()">Réessayer l’enregistrement</button>
+          </div>
+        `;
       }
 
-      for (let i = 0; i < currentBonnes.length; i++) {
-        const bonne = Array.isArray(currentBonnes[i]) ? Number(currentBonnes[i][0]) : Number(currentBonnes[i]);
-        payload[`Bonne_Q${i + 1}`] = LABELS[bonne];
+      document.getElementById("resultats").innerHTML = html;
+    }
+
+    async function retryLastSubmission() {
+      if (!lastPayloadSent) return;
+      document.getElementById("resultats").innerHTML = `<div class="status-box">Nouvelle tentative d’enregistrement...</div>`;
+      const saveResult = await postToSheets(lastPayloadSent);
+      renderFinalMessage(saveResult);
+    }
+
+    async function runAutomaticSheetsTest() {
+      const statusEl = document.getElementById("debug-status");
+      statusEl.innerHTML = "Test automatique en cours...";
+
+      const fakeStudent = {
+        nom: "TEST_AUTO",
+        prenom: "SYSTEME",
+        age: "99",
+        niveauEtude: "Doctorat",
+        sexe: "Homme",
+        apprenantChinois: "Oui",
+        hsk: "6",
+        hskk: "高级",
+        annee: "4ème année ou plus"
+      };
+
+      const oldStudent = { ...etudiant };
+      etudiant = fakeStudent;
+
+      const oldExperience = currentExperience;
+      const oldQuestions = JSON.parse(JSON.stringify(currentQuestions));
+      const oldReponses = JSON.parse(JSON.stringify(reponses));
+
+      try {
+        const tests = [];
+
+        currentExperience = "exp1_2";
+        currentQuestions = JSON.parse(JSON.stringify(bank.exp1_2.questions));
+        reponses = currentQuestions.map((q) => {
+          const match = q.texte.match(/\((.*?)\)/);
+          const trans = match ? match[1].trim().split(' ') : [];
+          return trans.length === 2 ? [1, 1] : [1];
+        });
+        let p1 = buildExp1_2Payload();
+        p1["Test_Mode"] = "OUI";
+        p1["Test_Label"] = "AUTO_EXP1_2";
+        tests.push(["Exp1_2", await postToSheets(p1)]);
+
+        currentExperience = "exp3";
+        currentQuestions = JSON.parse(JSON.stringify(bank.exp3.questions));
+        reponses = currentQuestions.map(() => ({ choice: 1, rating: 4 }));
+        let p3 = buildExp3Payload();
+        p3["Test_Mode"] = "OUI";
+        p3["Test_Label"] = "AUTO_EXP3";
+        tests.push(["Exp3", await postToSheets(p3)]);
+
+        currentExperience = "exp4";
+        currentQuestions = JSON.parse(JSON.stringify(bank.exp4.questions));
+        reponses = currentQuestions.map((_, i) => i % 2);
+        let p4 = buildExp4Payload();
+        p4["Test_Mode"] = "OUI";
+        p4["Test_Label"] = "AUTO_EXP4";
+        tests.push(["Exp4", await postToSheets(p4)]);
+
+        statusEl.innerHTML = tests.map(([label, result]) => {
+          return `<div>${label} : ${result && result.ok ? '<span class="success">OK</span>' : '<span class="fail">ECHEC</span>'} ${result && result.message ? '- ' + result.message : ''}</div>`;
+        }).join("");
+      } catch (err) {
+        console.error(err);
+        statusEl.innerHTML = `<span class="fail">Erreur de test : ${err.message}</span>`;
+      } finally {
+        etudiant = oldStudent;
+        currentExperience = oldExperience;
+        currentQuestions = oldQuestions;
+        reponses = oldReponses;
       }
-
-      payload["Reponses_Codees"] = reponses.join("|");
-
-      postToSheets(payload);
     }
 
     function postToSheets(payload) {
-      fetch(GOOGLE_SCRIPT_URL, {
-        method: "POST",
-        mode: "no-cors",
-        body: JSON.stringify(payload),
-        headers: { "Content-Type": "application/json" }
-      }).catch(err => {
-        console.error("Erreur envoi Sheets :", err);
+      return new Promise((resolve) => {
+        const callbackName = `jsonp_cb_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+        const script = document.createElement("script");
+        let done = false;
+
+        function cleanup(result) {
+          if (done) return;
+          done = true;
+          clearTimeout(timer);
+          if (script.parentNode) script.parentNode.removeChild(script);
+          try { delete window[callbackName]; } catch (e) {}
+          resolve(result);
+        }
+
+        const timer = setTimeout(() => {
+          cleanup({ ok: false, message: "Délai dépassé lors de la confirmation Google Sheets." });
+        }, 15000);
+
+        window[callbackName] = function(response) {
+          cleanup(response || { ok: false, message: "Réponse vide du script." });
+        };
+
+        script.onerror = function() {
+          cleanup({ ok: false, message: "Erreur réseau ou URL Apps Script invalide." });
+        };
+
+        script.src = `${GOOGLE_SCRIPT_URL}?callback=${encodeURIComponent(callbackName)}&payload=${encodeURIComponent(JSON.stringify(payload))}`;
+        document.body.appendChild(script);
       });
     }
 
     function downloadBlob(content, filename) {
       const blob = new Blob(["\uFEFF" + content], { type: "text/csv;charset=utf-8;" });
       const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
+      const blobUrl = URL.createObjectURL(blob);
+      a.href = blobUrl;
       a.download = filename;
       a.click();
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
     }
 
     function safeCSV(value) {
